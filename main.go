@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	log.Println("Starting Todo Lists")
+	log.Println("Starting Todo Lists Service..!")
 
 	log.Println("Initializig configuration")
 	db := config.ConnectDB()
