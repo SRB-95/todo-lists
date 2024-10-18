@@ -74,7 +74,7 @@ func (r *TaskRepository) FilterTasksByDeadline(start, end time.Time) ([]models.T
 	return tasks, nil
 }
 
-// DeleteTask deletes a task by its ID
+// DeleteTask method deletes a task by its ID
 func (r *TaskRepository) DeleteTask(id int) error {
 	result := r.DB.Delete(&models.Task{}, id)
 	return result.Error

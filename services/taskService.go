@@ -45,7 +45,7 @@ func (s *TaskService) FilterTasksByDeadline(start, end time.Time) ([]models.Task
 	return s.Repo.FilterTasksByDeadline(start, end)
 }
 
-// DeleteTask method deletes a task by its ID
+// DeleteTask deletes a task by its ID
 func (s *TaskService) DeleteTask(id int) error {
 	return s.Repo.DeleteTask(id)
 }

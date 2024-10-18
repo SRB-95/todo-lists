@@ -1,0 +1,7 @@
+# Ignore the .env file containing sensitive information
+.env
+
+# Other files and directories to ignore
+bin/
+*.exe
+*.log
