@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"todo-lists/models"
+	"todo-lists/entity"
 	"todo-lists/services"
 
 	"github.com/gin-gonic/gin"
@@ -15,9 +15,8 @@ type TaskController struct {
 	Service *services.TaskService
 }
 
-// CreateTask method handles the creation of a new task
 func (c *TaskController) CreateTask(ctx *gin.Context) {
-	var task models.Task
+	var task entity.Task
 
 	// Bind the incoming JSON to the task struct
 	if err := ctx.ShouldBindJSON(&task); err != nil {
@@ -93,7 +92,7 @@ func (c *TaskController) UpdateTask(ctx *gin.Context) {
 		return
 	}
 
-	var task models.Task
+	var task entity.Task
 	// Bind the incoming JSON to the task struct
 	if err := ctx.ShouldBindJSON(&task); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
