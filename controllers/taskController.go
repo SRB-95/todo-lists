@@ -83,7 +83,7 @@ func (c *TaskController) GetTaskByTag(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tasks)
 }
 
-// UpdateTask method handles the updating of an existing task
+// UpdateTask method handles the updating of an existing task by id
 func (c *TaskController) UpdateTask(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -179,5 +179,5 @@ func (c *TaskController) DeleteTask(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"}) // Respond with success message
+	ctx.JSON(http.StatusOK, gin.H{"message": "Task deleted successfully"})
 }

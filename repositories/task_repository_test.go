@@ -37,7 +37,7 @@ func setupTestDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock, func()) {
 
 func TestCreateTask(t *testing.T) {
 	gormDB, mock, cleanup := setupTestDB(t)
-	defer cleanup() // Ensure cleanup is called
+	defer cleanup()
 
 	// Define expected behavior for inserting a task
 	mock.ExpectBegin()
@@ -124,7 +124,6 @@ func TestGetTaskById(t *testing.T) {
 	assert.Equal(t, taskName, fetchedTask.Name)
 	assert.Equal(t, taskID, fetchedTask.ID) // Ensure fetchedTask.ID is compared as uint
 
-	// Ensure all expectations were met
 	err = mock.ExpectationsWereMet()
 	assert.NoError(t, err)
 
@@ -138,7 +137,6 @@ func TestGetTaskById(t *testing.T) {
 	assert.Equal(t, gorm.ErrRecordNotFound, err) // Check that the error is the record not found error
 	assert.Equal(t, entity.Task{}, fetchedTask)  // Should return an empty entity.Task
 
-	// Ensure all expectations were met again
 	err = mock.ExpectationsWereMet()
 	assert.NoError(t, err)
 
@@ -199,59 +197,6 @@ func TestGetTasksByTag(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// func TestUpdateTask(t *testing.T) {
-// 	gormDB, mock, cleanup := setupTestDB(t)
-// 	defer cleanup()
-
-// 	// Create a sample task to update
-// 	task := &entity.Task{
-// 		ID:       1,
-// 		Name:     "Old Task",
-// 		Deadline: time.Now(),
-// 		Tag:      "high",
-// 	}
-
-// 	// Update the task details
-// 	task.Name = "Updated Task"
-
-// 	// Mock the successful update
-// 	mock.ExpectBegin() // Expect a transaction to start
-// 	mock.ExpectExec("UPDATE `tasks` SET `name` = ?, `deadline` = ?, `tag` = ? WHERE `id` = ?").
-// 		WithArgs("Updated Task", task.Deadline, task.Tag, task.ID).
-// 		WillReturnResult(sqlmock.NewResult(1, 1)) // 1 row affected
-// 	mock.ExpectCommit() // Expect the transaction to commit
-
-// 	// Update the task details
-// 	//task.Name = "Updated Task"
-
-// 	// Create the repository instance
-// 	repo := &TaskRepository{DB: gormDB}
-
-// 	// Update the task
-// 	err := repo.UpdateTask(task)
-// 	assert.NoError(t, err)
-
-// 	// Ensure all expectations were met
-// 	err = mock.ExpectationsWereMet()
-// 	assert.NoError(t, err)
-
-// 	// Test for error handling during update
-// 	mock.ExpectBegin() // Expect a transaction to start
-// 	mock.ExpectExec("UPDATE `tasks` SET `name` = ?, `deadline` = ?, `tag` = ? WHERE `id` = ?").
-// 		WithArgs("Updated Task", task.Deadline, task.Tag, task.ID).
-// 		WillReturnResult(sqlmock.NewResult(1, 1)) // 1 row affected
-// 	mock.ExpectCommit() // Expect the transaction to commit
-
-// 	// Attempt to update the task again
-// 	err = repo.UpdateTask(task)
-// 	assert.Error(t, err)
-// 	assert.Equal(t, "db error", err.Error()) // Check the specific error message
-
-// 	// Ensure all expectations were met again
-// 	err = mock.ExpectationsWereMet()
-// 	assert.NoError(t, err)
-// }
-
 func TestSearchTasksByName(t *testing.T) {
 	gormDB, mock, cleanup := setupTestDB(t)
 	defer cleanup()
@@ -266,7 +211,7 @@ func TestSearchTasksByName(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT * FROM `tasks` WHERE name LIKE ?")).
 		WithArgs("%One%").
 		WillReturnRows(sqlmock.NewRows([]string{"id", "name", "deadline", "tag"}).
-			AddRow(expectedTasks[0].ID, expectedTasks[0].Name, expectedTasks[0].Deadline, expectedTasks[0].Tag)) // Return task1 in search results
+			AddRow(expectedTasks[0].ID, expectedTasks[0].Name, expectedTasks[0].Deadline, expectedTasks[0].Tag))
 
 	// Create the repository instance
 	repo := &TaskRepository{DB: gormDB}
@@ -317,36 +262,50 @@ func TestFilterTasksByDeadline(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// func TestDeleteTask(t *testing.T) {
-// 	gormDB, mock, cleanup := setupTestDB(t)
-// 	defer cleanup()
+func TestDeleteTask(t *testing.T) {
+	gormDB, mock, cleanup := setupTestDB(t)
+	defer cleanup()
 
-// 	// Mock the delete operation
-// 	mock.ExpectExec("DELETE FROM `tasks` WHERE `tasks`.`id` = ?").
-// 		WithArgs(1).
-// 		WillReturnResult(sqlmock.NewResult(0, 1)) // Simulate successful deletion of 1 row
+	repo := &TaskRepository{DB: gormDB}
+	taskID := 1
 
-// 	// Create the repository instance
-// 	repo := &TaskRepository{DB: gormDB}
+	// Test successful deletion
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `tasks` WHERE `tasks`.`id` = ?")).
+		WithArgs(taskID).
+		WillReturnResult(sqlmock.NewResult(0, 1)) // Simulate successful delete
+	mock.ExpectCommit()
 
-// 	// Attempt to delete the task
-// 	err := repo.DeleteTask(1)
-// 	assert.NoError(t, err)
+	err := repo.DeleteTask(taskID)
+	assert.NoError(t, err)
 
-// 	// Ensure all expectations were met
-// 	err = mock.ExpectationsWereMet()
-// 	assert.NoError(t, err)
+	// Ensure all expectations are met
+	assert.NoError(t, mock.ExpectationsWereMet())
 
-// 	// Now, mock the case where the task does not exist anymore
-// 	mock.ExpectExec("DELETE FROM `tasks` WHERE `tasks`.`id` = ?").
-// 		WithArgs(1).
-// 		WillReturnResult(sqlmock.NewResult(0, 0)) // Simulate deletion where no row exists
+	// Test deletion when task is not found
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `tasks` WHERE `tasks`.`id` = ?")).
+		WithArgs(taskID).
+		WillReturnResult(sqlmock.NewResult(0, 0)) // Simulate delete not found
+	mock.ExpectCommit()
 
-// 	// Attempt to delete the task again (should not return an error)
-// 	err = repo.DeleteTask(1)
-// 	assert.NoError(t, err) // Deleting a non-existent task shouldn't produce an error
+	err = repo.DeleteTask(taskID)
+	assert.NoError(t, err)
 
-// 	// Ensure all expectations were met again
-// 	err = mock.ExpectationsWereMet()
-// 	assert.NoError(t, err)
-// }
+	// Ensure all expectations are met
+	assert.NoError(t, mock.ExpectationsWereMet())
+
+	// Test error during deletion
+	mock.ExpectBegin()
+	mock.ExpectExec(regexp.QuoteMeta("DELETE FROM `tasks` WHERE `tasks`.`id` = ?")).
+		WithArgs(taskID).
+		WillReturnError(errors.New("some database error")) // Simulate an error during delete
+	mock.ExpectRollback()
+
+	err = repo.DeleteTask(taskID)
+	assert.Error(t, err)
+	assert.Equal(t, "some database error", err.Error())
+
+	// Ensure all expectations are met
+	assert.NoError(t, mock.ExpectationsWereMet())
+}

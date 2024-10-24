@@ -7,7 +7,7 @@ import (
 )
 
 type TaskService struct {
-	Repo *repositories.TaskRepository
+	Repo repositories.IRepo
 }
 
 // CreateTask method creates a new task
