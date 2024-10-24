@@ -12,7 +12,7 @@ import (
 )
 
 type TaskController struct {
-	Service *services.TaskService
+	Service services.IService
 }
 
 func (c *TaskController) CreateTask(ctx *gin.Context) {

@@ -8,3 +8,7 @@
 - search task by name: curl -X GET "http://localhost:8080/tasks/search?keyword=new"
 - filter tasks by date-range: curl -X GET "http://localhost:8080/tasks/filter?start=2024-01-01&end=2024-12-31"
 - delete task by id: curl -X DELETE "http://localhost:8080/tasks/{id}"
+
+- Create mockRepoFile: mockgen -destination=core/mock/repo.go --build_flags=--mod=mod -package=core todo-lists/core IRepo
+- Create mockControllerFile: mockgen -destination=mocks/mock_controller.go --build_flags=--mod=mod -package=controller todo-lists/controllers IController
+- Create mock service: mockgen -destination=mocks/mock_service.go --build_flags=--mod=mod -package=services todo-lists/services IService
